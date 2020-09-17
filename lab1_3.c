@@ -91,38 +91,38 @@ int main(void)
     while (1) {
 
     	char D1 = ((GPIOC)->IDR & (GPIO_PIN_6));
-    	char D2 = ((GPIOC)->IDR & (GPIO_PIN_7));
-    	char D3 = ((GPIOJ)->IDR & (GPIO_PIN_1));
-    	char D4 = ((GPIOF)->IDR & (GPIO_PIN_6));
+    	char D0 = ((GPIOC)->IDR & (GPIO_PIN_7));
+    	char D2 = ((GPIOJ)->IDR & (GPIO_PIN_1));
+    	char D3 = ((GPIOF)->IDR & (GPIO_PIN_6));
 
+
+		if (D0) {
+			GPIOJ->BSRR = (uint16_t)GPIO_PIN_13; // Turn on Green LED (LED2)
+		}
+		else {
+			GPIOJ->BSRR = (uint32_t)GPIO_PIN_13 << 16;
+		}
 
 		if (D1) {
-			GPIOJ->BSRR = (uint16_t)GPIO_PIN_5; // Turn on Green LED (LED2)
+			GPIOJ->BSRR = (uint16_t)GPIO_PIN_5;
 		}
 		else {
 			GPIOJ->BSRR = (uint32_t)GPIO_PIN_5 << 16;
 		}
 
-		if (D2) {
-			GPIOD->BSRR = (uint32_t)GPIO_PIN_4 << 16;
-		}
-		else {
-			GPIOD->BSRR = (uint16_t)GPIO_PIN_4;
-		}
-
 		//THIS BASTARD WORKS
-		if (D3) {
+		if (D2) {
 			GPIOA->BSRR = (uint16_t)GPIO_PIN_12;
 		}
 		else {
 			GPIOA->BSRR = (uint32_t)GPIO_PIN_12 << 16;
 		}
 
-		if (D4) {
-			GPIOJ->BSRR = (uint16_t)GPIO_PIN_13 << 16;
+		if (D3) {
+			GPIOD->BSRR = (uint32_t)GPIO_PIN_4 << 16;
 		}
 		else {
-			GPIOJ->BSRR = (uint32_t)GPIO_PIN_13;
+			GPIOD->BSRR = (uint16_t)GPIO_PIN_4 ;
 		}
-
+    }
 }
