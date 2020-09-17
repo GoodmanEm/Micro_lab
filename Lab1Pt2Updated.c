@@ -31,7 +31,7 @@ int main(void){
 
     printf("\033[2;0H");//moving to row 2
 	printf("%*.*s%s", padding, padding, " ", title_str);
-    printf("\033[12;25r"); //scroll section
+    printf("\033[12;24r"); //scroll section
 
     while(1){
     	//reverting to this to prevent erasure of key color attributes
@@ -53,9 +53,15 @@ int main(void){
        	    	printf("\033[12;0H\033[s");
        	     	counter= counter + 1;
        	     }
+       	     if(counter != 12){
+       	    	 printf("\r\n");
+       	     }
+
     		 printf("\a"); //blink
         	 printf("\033[DThe keyboard character $%2.2x", int_value); //%2.2 prints 2 characters for hex
-        	 printf(" is \033[4m\033[5m'not printable'\r\n\033[0m"); //underscores, blink, erase respectively
+        	 printf(" is \033[4m\033[5m'not printable'\033[0m"); //underscores, blink, erase respectively
+        	 fflush(stdout); // Need to flush stdout after using printf that doesn't end in \n
+
       	 }
        	 //everything else is printable
       	 else{
@@ -67,4 +73,7 @@ int main(void){
       	 }
     }
 }
+
+
+
 
