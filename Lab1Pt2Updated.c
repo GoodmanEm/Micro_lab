@@ -10,7 +10,7 @@ int main(void){
 	Sys_Init(); // This always goes at the top of main (defined in init.c)
 
 	char KeyChar;
-	int int_value;
+	char int_value;
 
 	//stuff to make title centered
 	const char title_str[] ="PRESS <ESC> or <CTL>+[ TO QUIT \r\n\n";
@@ -37,11 +37,8 @@ int main(void){
     	//reverting to this to prevent erasure of key color attributes
         printf("\033[44m\033[33m\033");// background blue, text yellow
     	KeyChar = getchar();
-   	    //putchar(KeyChar);
-        //printf("\r\n");
-
         //convert char to int value
-        int_value = (int)KeyChar;
+        int_value = KeyChar;
 
         //27 is <ESC>
        	 if( int_value == 27){
@@ -51,37 +48,23 @@ int main(void){
        	 }
        	 //all non printable characters
     	 else if(int_value <= 32 || int_value == 127){
-    		 //if first line of non-printables then go to line 12, save position
+//    		 //if first line of non-printables then go to line 12, save position
        	     if(counter == 12){
        	    	printf("\033[12;0H\033[s");
        	     	counter= counter + 1;
        	     }
-       	     //if not first line of non-printables but before last, load cursor, go down, and save
-			 else if(counter < 25){
-				 printf("\033[u\033[1B\033[s");
-				 counter = counter + 1;
-			 }
-       	     //else last row of non printables, go back to 12
-			 else{
-				 counter = 12;
-	       	     printf("\033[12;0H\033[s");
-			 }
     		 printf("\a"); //blink
-        	 printf("The keyboard character $%2.2x,", int_value); //%2.2 prints 2 characters for hex
+        	 printf("\033[DThe keyboard character $%2.2x", int_value); //%2.2 prints 2 characters for hex
         	 printf(" is \033[4m\033[5m'not printable'\r\n\033[0m"); //underscores, blink, erase respectively
       	 }
        	 //everything else is printable
       	 else{
-      	     printf("\033[6;0H");//moving to row 6
+      	     printf("\033[s\033[6;0H");//saving last position, moving to row 6
 			 printf("The Keyboard character is ");
 			 printf("\033[31m");//making output red
 				 putchar(KeyChar);
-			// printf("\033[33m");//returning text to yellow
-			 printf("\r\n");
+			 printf("\r\n\033[u"); // goes back to most recent position
       	 }
     }
 }
-
-
-
 
