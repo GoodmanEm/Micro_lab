@@ -42,11 +42,11 @@ void TIM6_DAC_IRQHandler() {	// Pass the control to HAL, which processes the IRQ
 	printf("time elapsed in 1/10 sec: %i\n\r", tenth_sec);
 
 }
-
+/*
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	// Callback function contents
 	if (htim->Instance == TIM6) {
 		// Do stuff pertaining to TIM0 interrupt
 	}
 }
-
+*/
