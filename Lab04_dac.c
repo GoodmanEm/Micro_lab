@@ -13,26 +13,24 @@ ADC_HandleTypeDef hadc1;
 
 static void DAC_Init(void);
 void configureADC();
+float value;
+uint16_t raw_temp;
+
 
 // Main Execution Loop
 int main(void)
 {
 	unsigned int N_dac = 0;
 	unsigned int prev_N_dac = 100;
-	int V_DAC;
-	float V_ref = 3.3;
-	const int frequency = 20000;
-
-	// value = (uint16_t) rint((sinf(((2*PI)/SAMPLES)*i)+1)*2048);
-
 
 	//Initialize the system
 	Sys_Init();
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 
-	//HAL_DAC_MspInit(&hdac);
-	//HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+
+	HAL_DAC_MspInit(&hdac);
+
 	configureADC();
 	HAL_ADC_Start(&hadc1);
 
@@ -44,24 +42,15 @@ int main(void)
 
 	while (1) {
 
-		if (N_dac == prev_N_dac){
-			N_dac = 0;
-			V_DAC = ((V_ref*N_dac)/(4096));
-			HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, V_DAC);
-			HAL_Delay(1);
-			printf("number %u\r\n", V_DAC);
+		HAL_ADC_PollForConversion(&hadc1, 1);
+		raw_temp = HAL_ADC_GetValue(&hadc1);
 
-		}
-		else {
 		prev_N_dac = N_dac;
-		N_dac++;
-		V_DAC = (V_ref*N_dac)/(2^8);
+		N_dac = raw_temp;
 
-		// Not sure about 3rd variable
-		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, V_DAC);
+		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, N_dac);
 		HAL_Delay(1);
-		printf("number %u\r\n", V_DAC);
-		}
+		printf("number %u\r\n", N_dac);
 	}
 }
 
@@ -69,25 +58,35 @@ void DAC_Init(void) {
 
 	DAC_ChannelConfTypeDef sConfig;
 
-	GPIO_InitTypeDef GPIO_InitStruct;
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN;
+		asm ("nop");
+		asm ("nop");
 
 	// Initialization
 	hdac.Instance = DAC;
 	HAL_DAC_Init(&hdac);
 
 	/**DAC channel OUT1 config */
-	sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+	sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
 	sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 	HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
 
+}
+
+void HAL_DAC_MspInit(DAC_HandleTypeDef *hadc) {
+
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+
 	/* DAC GPIO Configuration
 	PA5 ------> DAC_OUT1 or PA4*/
-	GPIO_InitStruct.Pin = GPIO_PIN_5;
+	GPIO_InitStruct.Pin = GPIO_PIN_4;
 	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
+
 // ---------------------------------------------
 void configureADC() {
 	ADC_ChannelConfTypeDef sConfig;
