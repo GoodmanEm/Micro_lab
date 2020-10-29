@@ -48,9 +48,11 @@ int main(void)
 
 
 			 printf("\033[1;0H current value: %f\r\n", value);
-			 printf("\033[2;0H high: %f\r\n",high);
-			 printf("\033[3;0H low: %f\r\n",low);
-			 printf("\033[4;0H average: %f\r\n",(float)(average)/conversions);
+		         printf("\033[2;0H current hex value: %h\r\n", raw_temp);
+			 printf("\033[3;0H high: %f\r\n",high);
+			 printf("\033[4;0H low: %f\r\n",low);
+			 printf("\033[5;0H average: %f\r\n",(float)(average)/conversions);
+
 
 
 			 HAL_Delay(1000);
