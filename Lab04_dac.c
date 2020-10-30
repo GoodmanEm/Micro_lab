@@ -49,8 +49,8 @@ int main(void)
 		N_dac = raw_temp;
 
 		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, N_dac);
-		HAL_Delay(1);
-		printf("number %u\r\n", N_dac);
+		//HAL_Delay(1);
+		//printf("number %u\r\n", N_dac);
 	}
 }
 
