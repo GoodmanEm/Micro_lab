@@ -2,12 +2,12 @@
 #include<stdint.h>
 #include<stdlib.h>
 
- uint8_t CinitBuffer[500];
- uint8_t CdestBuffer[500];
+ uint8_t CinitBuffer[1000];
+ uint8_t CdestBuffer[1000];
 
 
- uint8_t initBuffer[500];
- uint8_t destBuffer[500];
+ uint8_t initBuffer[1000];
+ uint8_t destBuffer[1000];
  DMA_HandleTypeDef DMA2_Handler;
 
  void DMACallback(DMA_HandleTypeDef *hdma);
@@ -19,11 +19,11 @@ int main(void)
 	HAL_Init();
 	__DMA2_CLK_ENABLE();
 	int i = 0;
-	for (i = 0; i < 499; ++i)
+	for (i = 0; i < 999; ++i)
 	{
 		CinitBuffer[i]= i;
 	}
-	for (i = 0; i < 499; ++i)
+	for (i = 0; i < 999; ++i)
 	{
 		initBuffer[i]= i;
 	}
@@ -39,7 +39,7 @@ int main(void)
 
 	DWT->CYCCNT = 0; // Clear the cycle counter
 	//do in for loop
-	for (i = 0; i < 499; ++i)
+	for (i = 0; i < 999; ++i)
 	{
 		CdestBuffer[i]= CinitBuffer[i];
 	}
@@ -78,13 +78,9 @@ int main(void)
 	 HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 
-	// __HAL_LINKDMA(&DMA2_Handler, &initBuffer, DMA2_Handler);
-
 	 DWT->CYCCNT = 0; // Clear the cycle counter
-	 HAL_DMA_Start_IT(&DMA2_Handler, (uint32_t)&initBuffer, (uint32_t)&destBuffer, 500);
+	 HAL_DMA_Start_IT(&DMA2_Handler, (uint32_t)&initBuffer, (uint32_t)&destBuffer, 1000);
 
- 	// HAL_DMA_Start(&DMA2_Handler, (uint32_t)&initBuffer, (uint32_t)destBuffer, 1000);
-	 //HAL_DMA_PollForTransfer(&DMA2_Handler, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
 
 	while(1);
 }
