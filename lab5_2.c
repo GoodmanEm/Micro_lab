@@ -26,15 +26,13 @@ int main(void)
 	DMA_config();
 
 	while(1){
-
+		rx_value = 0;
 		tx_value = getchar();
 		printf("1. %c\r\n",tx_value);
 
-		/*HAL_SPI_Receive(&USB_UART, (uint8_t *)&tx_value ,1,10);
-
 		if(tx_value == 0)
 			continue;
-		else{*/
+		else{
 
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
 			HAL_SPI_TransmitReceive_DMA(&SPI2_handler,(uint8_t *)&tx_value, (uint8_t *)&rx_value,1);
@@ -44,16 +42,13 @@ int main(void)
 
 			while(!rx_value);
 			printf("3. %c\r\n\r\n",rx_value);
-		//}
+		}
 	}
 }
 
 void DMA_config(void){
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
-
-	DMA_hand_rx.XferCpltCallback = &DMACallback;
-	tx_DMA_hand.XferCpltCallback = &DMACallback;
 
 	//direction, data size, address incrementation, mode, and FIFO buffers
 	DMA_hand_rx.Instance = DMA1_Stream3;
@@ -80,58 +75,38 @@ void DMA_config(void){
 	DMA_hand_rx.Init.Priority = DMA_PRIORITY_HIGH;
 	tx_DMA_hand.Init.Priority = DMA_PRIORITY_HIGH;
 
-	DMA_hand_rx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-	DMA_hand_rx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-	tx_DMA_hand.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-	tx_DMA_hand.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-
-/*	DMA_hand_rx.Init.MemBurst = DMA_MBURST_SINGLE;
-	tx_DMA_hand.Init.PeriphBurst = DMA_MBURST_SINGLE;
-	DMA_hand_rx.Init.MemBurst = DMA_MBURST_SINGLE;
-	tx_DMA_hand.Init.PeriphBurst = DMA_MBURST_SINGLE;
-*/	// Memburst
-	// PeriphBurst
+	DMA_hand_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	tx_DMA_hand.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
 	HAL_DMA_Init(&tx_DMA_hand);
 	HAL_DMA_Init(&DMA_hand_rx);
 
-	//__HAL_LINKDMA(__HANDLE__, __PPP_DMA_FIELD__, __DMA_HANDLE__) also (or hdmarx)
-	__HAL_LINKDMA(&SPI2_handler, hdmarx , DMA_hand_rx); //HERE?
-	__HAL_LINKDMA(&SPI2_handler, hdmatx , tx_DMA_hand); //HERE?
+
+	HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0x1, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
+
+	HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
 
 	// curious about this
-	HAL_DMA_Start(&DMA_hand_rx, tx_value , &tx_DMA_hand, 1);
-	HAL_DMA_Start(&tx_DMA_hand, rx_value , &DMA_hand_rx, 1);
-
-	HAL_DMA_IRQHandler(&DMA_hand_rx);
-	HAL_DMA_IRQHandler(&tx_DMA_hand);
+	//HAL_DMA_Start(&DMA_hand_rx, tx_value , &tx_DMA_hand, 1);
+	//HAL_DMA_Start(&tx_DMA_hand, rx_value , &DMA_hand_rx, 1);
 
 }
 
-void DMACallback(DMA_HandleTypeDef *hdma) {
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi){
 
-	if(hdma->Instance == DMA1_Stream3) {
-
-	}
-
-	if(hdma->Instance == DMA1_Stream4) {
-
-	}
 }
 
-/*
-void DMA2_Stream0_IRQHandler(void) {
+void DMA1_Stream3_IRQHandler(void) {
 
-	HAL_DMA_IRQHandler(&hdma_adc1); //This will automatically call the HAL_UART_RxCpltCallback()
+	HAL_DMA_IRQHandler(&DMA_hand_rx); //This will automatically call the HAL_UART_RxCpltCallback()
+}
 
-}*/
-/*
-void HAL_DMA_Init(DMA_HandleTypeDef *hdma){
-	DMA_InitTypeDef DMA_init;
+void DMA1_Stream4_IRQHandler(void) {
 
-	__HAL_RCC_DMA1_CLK_ENABLE();
-}*/
-
+	HAL_DMA_IRQHandler(&tx_DMA_hand); //This will automatically call the HAL_UART_RxCpltCallback()
+}
 
 void configureSPI()
 {
@@ -173,6 +148,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 	    GPIO_init.Pin = GPIO_PIN_11 | GPIO_PIN_12;
 
 	    HAL_GPIO_Init(GPIOA, &GPIO_init);
+
+		//__HAL_LINKDMA(__HANDLE__, __PPP_DMA_FIELD__, __DMA_HANDLE__) also (or hdmarx)
+		__HAL_LINKDMA(hspi, hdmarx , DMA_hand_rx); //HERE?
+		__HAL_LINKDMA(hspi, hdmatx , tx_DMA_hand); //HERE?
 
 	}
 }
