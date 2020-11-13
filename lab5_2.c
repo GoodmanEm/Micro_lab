@@ -22,13 +22,13 @@ int main(void)
 	uart_print(&USB_UART,"\033[2J\033[;H");
 
 	// For convenience
-	configureSPI();
 	DMA_config();
+	configureSPI();
 
 	while(1){
 		rx_value = 0;
 		tx_value = getchar();
-		printf("1. %c\r\n",tx_value);
+		printf("TX %c\r\n",tx_value);
 
 		if(tx_value == 0)
 			continue;
@@ -38,10 +38,10 @@ int main(void)
 			HAL_SPI_TransmitReceive_DMA(&SPI2_handler,(uint8_t *)&tx_value, (uint8_t *)&rx_value,1);
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
 
-			printf("2. %c\r\n",tx_value);
+			//printf("2. %c\r\n",tx_value);
 
 			while(!rx_value);
-			printf("3. %c\r\n\r\n",rx_value);
+			printf("RX %c\r\n\r\n",rx_value);
 		}
 	}
 }
@@ -57,13 +57,13 @@ void DMA_config(void){
 	tx_DMA_hand.Instance = DMA1_Stream4;
 	tx_DMA_hand.Init.Channel = DMA_CHANNEL_0;
 
-	tx_DMA_hand.Init.Direction = DMA_PERIPH_TO_MEMORY;
-	DMA_hand_rx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+	tx_DMA_hand.Init.Direction = DMA_MEMORY_TO_PERIPH;
+	DMA_hand_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
 
 	DMA_hand_rx.Init.PeriphInc = DMA_PINC_DISABLE;
-	DMA_hand_rx.Init.MemInc = DMA_MINC_ENABLE;
+	DMA_hand_rx.Init.MemInc = DMA_MINC_DISABLE;
 	tx_DMA_hand.Init.PeriphInc = DMA_PINC_DISABLE;
-	tx_DMA_hand.Init.MemInc = DMA_MINC_ENABLE;
+	tx_DMA_hand.Init.MemInc = DMA_MINC_DISABLE;
 
 	DMA_hand_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	DMA_hand_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
@@ -88,15 +88,12 @@ void DMA_config(void){
 	HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
 
-	// curious about this
-	//HAL_DMA_Start(&DMA_hand_rx, tx_value , &tx_DMA_hand, 1);
-	//HAL_DMA_Start(&tx_DMA_hand, rx_value , &DMA_hand_rx, 1);
 
 }
 
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi){
-
-}
+//void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi){
+//	printf("aaahhhhhhh\r\n");
+//}
 
 void DMA1_Stream3_IRQHandler(void) {
 
@@ -151,7 +148,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 
 		//__HAL_LINKDMA(__HANDLE__, __PPP_DMA_FIELD__, __DMA_HANDLE__) also (or hdmarx)
 		__HAL_LINKDMA(hspi, hdmarx , DMA_hand_rx); //HERE?
-		__HAL_LINKDMA(hspi, hdmatx , tx_DMA_hand); //HERE?
+		__HAL_LINKDMA(hspi, hdmatx , tx_DMA_hand ); //HERE?
 
 	}
 }
