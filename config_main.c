@@ -45,9 +45,7 @@ int main(void){
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc){
     GPIO_InitTypeDef pins_config;
 
-	__HAL_RCC_GPIOJ_CLK_ENABLE();	//INPUTS: PJ0 -> D2	// PJ1 -> D4	// PJ3 -> D7	// PJ4 -> D8
 
-	__HAL_RCC_SYSCFG_CLK_ENABLE();
 
 	asm ("nop");
 	asm ("nop");
@@ -58,7 +56,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc){
     pins_config.Pull = GPIO_PULLDOWN;
 
     HAL_GPIO_Init(GPIOJ, &pins_config);
+    
+	__HAL_RCC_GPIOJ_CLK_ENABLE();	//INPUTS: PJ0 -> D2	// PJ1 -> D4	// PJ3 -> D7	// PJ4 -> D8
 
+	__HAL_RCC_SYSCFG_CLK_ENABLE();
 }
 
 void configureADC()
@@ -105,12 +106,10 @@ void EXTI3_IRQHandler(void) {
 void EXTI4_IRQHandler(){
 	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
 }
-/*
-void EXTI2_3_IRQHandler(void) {
-	//inputs
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if(GPIO_Pin == GPIO_PIN_1){
+		prinf("yelp");
+	}
 
 }
-*/
