@@ -31,12 +31,12 @@ int main(void){
 	printf("\033[2J\033[;H");
 
 	while (1){
-		if(HAL_GPIO_ReadPin(GPIOJ, GPIO_PIN_0)){
+		/*
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 			printf("testing\r\n");
 			HAL_Delay(500);
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-		}
+		}*/
 
 	}
 }
@@ -44,8 +44,6 @@ int main(void){
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc){
     GPIO_InitTypeDef pins_config;
-
-
 
 	asm ("nop");
 	asm ("nop");
@@ -56,7 +54,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc){
     pins_config.Pull = GPIO_PULLDOWN;
 
     HAL_GPIO_Init(GPIOJ, &pins_config);
-    
+
 	__HAL_RCC_GPIOJ_CLK_ENABLE();	//INPUTS: PJ0 -> D2	// PJ1 -> D4	// PJ3 -> D7	// PJ4 -> D8
 
 	__HAL_RCC_SYSCFG_CLK_ENABLE();
@@ -108,8 +106,35 @@ void EXTI4_IRQHandler(){
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if(GPIO_Pin == GPIO_PIN_1){
-		prinf("yelp");
+
+	if(GPIO_Pin == GPIO_PIN_0){
+		HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_0, GPIO_PIN_SET);
+		printf("testing 0\r\n");
+		HAL_Delay(500);
+		HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_0, GPIO_PIN_RESET);
 	}
 
+	if(GPIO_Pin == GPIO_PIN_1){
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_1, GPIO_PIN_SET);
+			printf("testing 1\r\n");
+			HAL_Delay(500);
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_1, GPIO_PIN_RESET);
+		}
+
+	if(GPIO_Pin == GPIO_PIN_3){
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_3, GPIO_PIN_SET);
+			printf("testing 3\r\n");
+			HAL_Delay(500);
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_3, GPIO_PIN_RESET);
+		}
+
+	if(GPIO_Pin == GPIO_PIN_4){
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_4, GPIO_PIN_SET);
+			printf("testing 4\r\n");
+			HAL_Delay(500);
+			HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_4, GPIO_PIN_RESET);
+		}
+
 }
+
+
