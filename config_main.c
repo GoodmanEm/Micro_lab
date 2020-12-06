@@ -1,6 +1,4 @@
-#include "stm32f769xx.h"
 #include "init.h"
-#include<stdint.h>
 
 /*
  * (4) 10k ohm resistors for switches
@@ -13,33 +11,41 @@
 //pins to use
 //PJ0 D4
 //PC8 D5
+ADC_HandleTypeDef hadc1;
+
+void configureADC();
 
 int main(void){
 	Sys_Init();
-	init_pins();
+	configureADC();
+	HAL_ADC_Start(&hadc1);
+
+	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
 
 	// Read the README in the base directory of this project.
 
 	printf("\033[2J\033[;H");
 
 	while (1){
-		HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_6, GPIO_PIN_SET);
-		printf("testing\r\n");
-		HAL_Delay(500);
-		HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_6, GPIO_PIN_RESET);
+		if(HAL_GPIO_ReadPin(GPIOJ, GPIO_PIN_0)){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+			printf("testing\r\n");
+			HAL_Delay(500);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+		}
 
 	}
 }
 
 
-void init_pins(void){
+void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc){
     GPIO_InitTypeDef pins_config;
-    GPIO_InitTypeDef LEDS_config;
 
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOF_CLK_ENABLE();
-	__HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOJ_CLK_ENABLE();	//INPUTS: PJ0 -> D4	// PJ1 -> D2	// PJ3 -> D7	// PJ4 -> D8
+	__HAL_RCC_GPIOJ_CLK_ENABLE();	//INPUTS: PJ0 -> D2	// PJ1 -> D4	// PJ3 -> D7	// PJ4 -> D8
 
 	__HAL_RCC_SYSCFG_CLK_ENABLE();
 
@@ -53,30 +59,58 @@ void init_pins(void){
 
     HAL_GPIO_Init(GPIOJ, &pins_config);
 
-    //TIM12_CH1,	TIM3_CH3, TIM11_CH1,	TIM12_CH1
-	//sets 4 outputs		//PF6 ->D3 // PC8 -> D5 // PF7 -> D6	//PH6 -> D9
+}
 
-    LEDS_config.Pin = GPIO_PIN_8;
-    LEDS_config.Mode = GPIO_MODE_OUTPUT_PP;
-    LEDS_config.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOC, &LEDS_config);
+void configureADC()
+{
+	ADC_ChannelConfTypeDef sConfig;
+	// Enable the ADC Clock.
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+	asm ("nop");
+	asm ("nop");
 
-    LEDS_config.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-    LEDS_config.Mode = GPIO_MODE_OUTPUT_PP;
-    LEDS_config.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOF, &LEDS_config);
+	HAL_ADC_MspInit(&hadc1);
 
-    LEDS_config.Pin = GPIO_PIN_6;
-    LEDS_config.Mode = GPIO_MODE_OUTPUT_PP;
-    LEDS_config.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOH, &LEDS_config);
+
+	 hadc1.Instance = ADC1;
+	 hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+	 hadc1.Init.ScanConvMode = DISABLE;
+	 hadc1.Init.ContinuousConvMode = ENABLE;
+	 hadc1.Init.DiscontinuousConvMode = DISABLE;
+	 hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	 hadc1.Init.NbrOfConversion = 1;
+	 hadc1.Init.DMAContinuousRequests = DISABLE;
+	 hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+	HAL_ADC_Init(&hadc1); // Initialize the ADC
+
+
+	// Configure the ADC channel
+
+	sConfig.Channel = ADC_CHANNEL_6;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+}
+
+void EXTI0_IRQHandler(){
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
+}
+void EXTI1_IRQHandler(){
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
+}
+void EXTI3_IRQHandler(void) {
+
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_3);
+}
+void EXTI4_IRQHandler(){
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
 }
 /*
-void EXTI0_IRQHandler(void) {
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);	//timer interupt
-}
+void EXTI2_3_IRQHandler(void) {
+	//inputs
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
 
-void EXTI9_5_IRQHandler(void) {
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
 }
 */
